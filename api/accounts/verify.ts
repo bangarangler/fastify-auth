@@ -20,3 +20,21 @@ export async function createVerifyEmailLink(email: string) {
     console.error(e);
   }
 }
+
+export async function validateVerifyEmail(token: string, email: string) {
+  try {
+    const emailToken = await createVerifyEmailToken(email);
+    const isValid = emailToken === token;
+    if (isValid) {
+      const { user } = await import("../mongoConfig/mongo");
+      const filter = { "email.address": email };
+      const update = { $set: { "email.verified": true } };
+      await user.updateOne(filter, update);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.log("err", err);
+    return false;
+  }
+}

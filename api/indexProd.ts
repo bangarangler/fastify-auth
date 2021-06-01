@@ -14,13 +14,22 @@ import { logUserIn } from "./accounts/logUserIn";
 import { logUserOut } from "./accounts/logUserOut";
 import { getUserFromCookies } from "./accounts/user";
 import { sendEmail, mailInit } from "./mail/index";
-import { createVerifyEmailLink, validateVerifyEmail } from "./accounts/verify";
+import { createVerifyEmailLink } from "./accounts/verify";
 
 const app = fastify();
 
 async function startApp() {
   try {
-    await mailInit();
+    // app.register(fastifyStatic, {
+    //   root: path.join(__dirname, "build"),
+    // });
+    // app.register(fastifyStatic, {
+    //   root: "public",
+    // });
+    const DistPath = path.join(__dirname, "build");
+    app.register(fastifyStatic, {
+      root: DistPath,
+    });
 
     const corsConfig = __prod_cors__;
     app.register(fastifyCors, corsConfig);
@@ -28,14 +37,32 @@ async function startApp() {
     app.register(fastifyCookie, {
       secret: process.env.COOKIE_SIGNATURE,
     });
+    await mailInit();
 
-    // app.register(fastifyStatic, {
-    //   root: path.join(__dirname, "public"),
-    // });
-    // const DistPath = path.join(__dirname, "build");
-    // app.register(fastifyStatic, {
-    //   root: DistPath,
-    // });
+    app.get("/verify/:email/:token", {}, async (request, reply) => {
+      try {
+        // @ts-ignore
+        const { email, token } = request?.params;
+        const values = { email, token };
+        // @ts-ignore
+        console.log("request", request?.params?.email);
+        // @ts-ignore
+        console.log("request", request?.params?.token);
+        reply.code(200).send("All is good");
+      } catch (err) {
+        console.log("error", err);
+      }
+    });
+
+    app.post("/api/verify", {}, async (request, reply) => {
+      try {
+        // @ts-ignore
+        const { token, email } = request?.body;
+        console.log("request", request);
+      } catch (err) {
+        console.log("err", err);
+      }
+    });
 
     app.post("/api/register", {}, async (request: any, reply: any) => {
       try {
@@ -134,38 +161,6 @@ async function startApp() {
         }
       } catch (e) {
         throw new Error(e);
-      }
-    });
-
-    app.get("/verify/:email/:token", {}, async (request, reply) => {
-      try {
-        // @ts-ignore
-        const { email, token } = request?.params;
-        const values = { email, token };
-        // @ts-ignore
-        console.log("request", request?.params?.email);
-        // @ts-ignore
-        console.log("request", request?.params?.token);
-        // if (res.status === 200) {
-        //   return reply.redirect("/")
-        // }
-      } catch (err) {
-        console.log("error", err);
-      }
-    });
-
-    app.post("/api/verify", {}, async (request, reply) => {
-      try {
-        // @ts-ignore
-        const { token, email } = request?.body;
-        console.log("request", request);
-        const isValid = await validateVerifyEmail(token, email);
-        if (isValid) {
-          return reply.code(200).send();
-        }
-      } catch (err) {
-        console.log("err", err);
-        return reply.code(401).send();
       }
     });
 
