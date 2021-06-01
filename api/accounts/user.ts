@@ -6,6 +6,7 @@ import {
   ACCESS_TOKEN_NAME,
   REFRESH_TOKEN_NAME,
   JWTSignature,
+  isSecure,
 } from "../constants";
 
 export async function getUserFromCookies(request: any, reply: any) {
@@ -63,14 +64,14 @@ export async function refreshTokens(
         path: "/",
         domain: ROOT_DOMAIN,
         httpOnly: true,
-        secure: true,
+        secure: isSecure,
         expires: refreshExpires,
       })
       .setCookie(ACCESS_TOKEN_NAME, accessToken, {
         path: "/",
         domain: ROOT_DOMAIN,
         httpOnly: true,
-        secure: true,
+        secure: isSecure,
       });
   } catch (e) {
     console.error(e);

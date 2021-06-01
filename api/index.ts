@@ -13,14 +13,14 @@ import { authorizeUser } from "./accounts/authorize";
 import { logUserIn } from "./accounts/logUserIn";
 import { logUserOut } from "./accounts/logUserOut";
 import { getUserFromCookies } from "./accounts/user";
-// import { sendEmail, mailInit } from "./mail/index.js"
-// import { createVerifyEmailLink } from "./accounts/verify.js"
+import { sendEmail, mailInit } from "./mail/index";
+import { createVerifyEmailLink } from "./accounts/verify";
 
 const app = fastify();
 
 async function startApp() {
   try {
-    // await mailInit();
+    await mailInit();
 
     const corsConfig = __prod_cors__;
     app.register(fastifyCors, corsConfig);
@@ -41,12 +41,13 @@ async function startApp() {
         );
         // If account creations was successful
         if (userId) {
-          // const emailLink = await createVerifyEmailLink(request.body.email);
-          // await sendEmail({
-          //   to: request.body.email,
-          //   subject: "Verify your email",
-          //   html: `<a href="${emailLink}">verify</a>`,
-          // });
+          const emailLink = await createVerifyEmailLink(request.body.email);
+          console.log("emailLink:>> ", emailLink);
+          await sendEmail({
+            to: request.body.email,
+            subject: "Verify your email",
+            html: `<a href="${emailLink}">verify</a>`,
+          });
 
           await logUserIn(userId, request, reply);
           reply.send({
